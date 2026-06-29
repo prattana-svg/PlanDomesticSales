@@ -1,0 +1,1169 @@
+ <!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>แผนลาพักร้อน</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f0f7f9",
+                100: "#e0eff3",
+                600: "#1e5162",
+                700: "#163d4a",
+                800: "#0f2a33",
+                900: "#0a1d24",
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+      body {
+        font-family: "Sarabun", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      button,
+      .font-prompt {
+        font-family: "Prompt", sans-serif;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+      @media print {
+        body {
+          background-color: #ffffff;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .print-shadow-none {
+          box-shadow: none !important;
+          border: 1px solid #e2e8f0;
+        }
+        .print-container {
+          width: 100% !important;
+          max-width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        table {
+          page-break-inside: auto;
+        }
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800 min-h-screen">
+    <div id="app" class="p-4 md:p-6 print-container" v-cloak>
+      <header class="mb-6 no-print">
+        <div
+          class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+        >
+          <div class="flex items-center gap-3">
+            <div class="bg-primary-100 text-primary-600 p-2.5 rounded-xl">
+              <i class="fa-solid fa-calendar-check text-2xl"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-primary-600 tracking-tight">
+                ระบบแผนลาพักร้อน
+              </h1>
+              <p class="text-xs text-slate-500 mt-0.5">
+                จัดการแผนการลา ตรวจสอบโควตา และจัดการข้อมูลบุคลากร
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div
+              class="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200"
+            >
+              <button
+                @click="adjustMonth(-1)"
+                class="p-2 hover:bg-white rounded-lg transition text-slate-600"
+              >
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <select
+                v-model="selectedMonth"
+                class="bg-transparent font-medium text-slate-700 px-3 py-1 focus:outline-none cursor-pointer"
+              >
+                <option v-for="(m, idx) in thaiMonths" :key="idx" :value="idx">
+                  {{ m }}
+                </option>
+              </select>
+              <select
+                v-model="selectedYear"
+                class="bg-transparent font-medium text-slate-700 px-3 py-1 focus:outline-none cursor-pointer"
+              >
+                <option v-for="y in availableYears" :key="y" :value="y">
+                  พ.ศ. {{ y + 543 }}
+                </option>
+              </select>
+              <button
+                @click="adjustMonth(1)"
+                class="p-2 hover:bg-white rounded-lg transition text-slate-600"
+              >
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+            <button
+              @click="togglePrintMode"
+              class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm"
+            >
+              <i class="fa-solid fa-print"></i> โหมดพิมพ์
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 no-print"
+      >
+        <div
+          class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+        >
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase"
+              >พนักงานทั้งหมด</span
+            >
+            <h3 class="text-2xl font-bold text-slate-700 mt-1">
+              {{ employees.length }} คน
+            </h3>
+          </div>
+          <div class="bg-blue-50 text-blue-500 p-3.5 rounded-xl">
+            <i class="fa-solid fa-users text-xl"></i>
+          </div>
+        </div>
+        <div
+          class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+        >
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase"
+              >วันลาเต็มวัน</span
+            >
+            <h3 class="text-2xl font-bold text-amber-600 mt-1">
+              {{ countTotalLeaveOccurrences('A') }} วัน
+            </h3>
+          </div>
+          <div class="bg-amber-50 text-amber-500 p-3.5 rounded-xl">
+            <i class="fa-solid fa-umbrella-beach text-xl"></i>
+          </div>
+        </div>
+        <div
+          class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+        >
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase"
+              >ลาครึ่งเช้า</span
+            >
+            <h3 class="text-2xl font-bold text-sky-600 mt-1">
+              {{ countTotalLeaveOccurrences('B') }} ครั้ง
+            </h3>
+          </div>
+          <div class="bg-sky-50 text-sky-500 p-3.5 rounded-xl">
+            <i class="fa-solid fa-cloud-sun text-xl"></i>
+          </div>
+        </div>
+        <div
+          class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between"
+        >
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase"
+              >ลาครึ่งบ่าย</span
+            >
+            <h3 class="text-2xl font-bold text-rose-600 mt-1">
+              {{ countTotalLeaveOccurrences('C') }} ครั้ง
+            </h3>
+          </div>
+          <div class="bg-rose-50 text-rose-500 p-3.5 rounded-xl">
+            <i class="fa-solid fa-cloud-moon text-xl"></i>
+          </div>
+        </div>
+      </section>
+
+      <main
+        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden print-shadow-none"
+      >
+        <div
+          class="p-4 bg-slate-50 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 no-print"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              @click="openAddEmployeeModal()"
+              class="bg-primary-600 hover:bg-primary-700 text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-sm"
+            >
+              <i class="fa-solid fa-user-plus"></i> เพิ่มพนักงาน
+            </button>
+            <button
+              @click="openGroupModal"
+              class="bg-white hover:bg-slate-100 text-slate-700 font-medium px-4 py-2 rounded-xl border border-slate-200 text-sm"
+            >
+              <i class="fa-solid fa-folder-plus text-slate-400"></i>
+              จัดการกลุ่มงาน
+            </button>
+            <button
+              @click="openHolidayModal"
+              class="bg-white hover:bg-slate-100 text-slate-700 font-medium px-4 py-2 rounded-xl border border-slate-200 text-sm"
+            >
+              <i class="fa-solid fa-mug-hot text-slate-400"></i> วันหยุดพิเศษ
+            </button>
+          </div>
+          <div class="relative w-full md:w-64">
+            <span
+              class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm"
+              ><i class="fa-solid fa-magnifying-glass"></i
+            ></span>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="ค้นหาชื่อ, รหัส..."
+              class="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:border-primary-600"
+            />
+          </div>
+        </div>
+
+        <div class="p-6 text-center border-b border-slate-100 bg-primary-50">
+          <h2
+            class="text-xl md:text-2xl font-bold text-primary-600 tracking-wide font-prompt"
+          >
+            แผนลาพักร้อน ปี {{ selectedYear }} เดือน{{ thaiMonths[selectedMonth]
+            }} {{ selectedYear + 543 }}
+          </h2>
+          <div
+            class="mt-2 flex flex-wrap justify-center gap-4 text-xs font-semibold text-slate-600"
+          >
+            <span class="flex items-center gap-1"
+              ><span class="w-4 h-4 bg-rose-600 rounded"></span>
+              วันหยุดบริษัท</span
+            >
+            <span class="flex items-center gap-1"
+              ><span
+                class="w-4 h-4 bg-amber-500 rounded text-white flex items-center justify-center text-[10px]"
+                >A</span
+              >
+              ลาเต็มวัน</span
+            >
+            <span class="flex items-center gap-1"
+              ><span
+                class="w-4 h-4 bg-sky-500 rounded text-white flex items-center justify-center text-[10px]"
+                >B</span
+              >
+              ลาครึ่งเช้า</span
+            >
+            <span class="flex items-center gap-1"
+              ><span
+                class="w-4 h-4 bg-rose-500 rounded text-white flex items-center justify-center text-[10px]"
+                >C</span
+              >
+              ลาครึ่งบ่าย</span
+            >
+          </div>
+          <div
+            v-if="holidaysInCurrentMonth.length > 0"
+            class="mt-3 text-xs text-rose-600 bg-rose-50 inline-block px-3 py-1.5 rounded-lg border border-rose-100"
+          >
+            <i class="fa-solid fa-circle-exclamation mr-1"></i>
+            <span v-for="(holiday, idx) in holidaysInCurrentMonth" :key="idx"
+              >{{ holiday.name }} ({{ holiday.dayNum }})<span
+                v-if="idx < holidaysInCurrentMonth.length - 1"
+                >,
+              </span></span
+            >
+          </div>
+        </div>
+
+        <div
+          v-if="isLoading"
+          class="p-16 text-center text-slate-500 bg-white no-print"
+        >
+          <i
+            class="fa-solid fa-circle-notch fa-spin text-4xl text-primary-500 mb-4"
+          ></i>
+          <p class="text-sm font-medium">กำลังโหลดและเชื่อมต่อข้อมูล...</p>
+        </div>
+
+        <div v-else class="overflow-x-auto custom-scrollbar relative">
+          <table class="w-full text-sm border-collapse table-fixed select-none">
+            <thead
+              class="bg-slate-100 text-slate-600 border-b border-slate-200"
+            >
+              <tr>
+                <th
+                  class="sticky left-0 z-30 bg-slate-100 w-[45px] border-r py-3 text-center text-xs"
+                >
+                  No
+                </th>
+                <th
+                  class="sticky left-[45px] z-30 bg-slate-100 w-[90px] border-r py-3 text-left pl-3 text-xs"
+                >
+                  รหัสพนักงาน
+                </th>
+                <th
+                  class="sticky left-[135px] z-30 bg-slate-100 w-[185px] border-r py-3 text-left pl-3 text-xs"
+                >
+                  ชื่อ - นามสกุล
+                </th>
+                <th
+                  class="sticky left-[320px] z-30 bg-slate-100 w-[170px] border-r py-3 text-left pl-3 text-xs"
+                >
+                  ตำแหน่ง
+                </th>
+                <th
+                  class="sticky left-[490px] z-30 bg-slate-100 w-[80px] border-r-2 border-slate-300 py-3 text-center text-xs shadow-[3px_0_5px_rgba(0,0,0,0.05)]"
+                >
+                  ชื่อเล่น
+                </th>
+
+                <th
+                  v-for="day in daysInMonth"
+                  :key="day.dayNum"
+                  class="border-r w-[38px] text-center text-[11px] py-1.5"
+                  :class="[(day.isSunday || isSpecialHoliday(day.dateStr)) ? 'bg-rose-50 text-rose-600' : 'bg-slate-100']"
+                >
+                  <div>{{ day.dayName }}</div>
+                  <div class="text-[13px] font-bold">{{ day.dayNum }}</div>
+                </th>
+
+                <th
+                  class="bg-amber-50 text-amber-800 w-[70px] text-center text-xs border-l"
+                >
+                  ใช้ไป
+                </th>
+                <th
+                  class="bg-primary-50 text-primary-800 w-[80px] text-center text-xs border-l"
+                >
+                  คงเหลือ
+                </th>
+                <th
+                  class="bg-slate-100 text-slate-600 w-[80px] text-center text-xs border-l no-print"
+                >
+                  จัดการ
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <template v-for="group in filteredGroups" :key="group.id">
+                <tr class="bg-slate-50 border-y text-slate-700">
+                  <td
+                    class="sticky left-0 z-20 bg-slate-100 border-r font-bold px-3 py-2 text-primary-600 text-[13px]"
+                    colspan="5"
+                  >
+                    <i class="fa-solid fa-tags text-xs mr-1"></i>{{ group.name
+                    }}
+                  </td>
+                  <td
+                    :colspan="daysInMonth.length + 3"
+                    class="bg-slate-50"
+                  ></td>
+                </tr>
+
+                <tr
+                  v-for="(emp, empIdx) in getEmployeesInGroup(group.id)"
+                  :key="emp.id"
+                  class="hover:bg-slate-50 border-b group"
+                >
+                  <td
+                    class="sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r text-center py-2 text-xs text-slate-400"
+                  >
+                    {{ empIdx + 1 }}
+                  </td>
+                  <td
+                    class="sticky left-[45px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-mono text-xs text-slate-600"
+                  >
+                    {{ emp.employeeId }}
+                  </td>
+                  <td
+                    class="sticky left-[135px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-medium"
+                  >
+                    {{ emp.name }}
+                  </td>
+                  <td
+                    class="sticky left-[320px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 text-xs text-slate-500"
+                  >
+                    {{ emp.position }}
+                  </td>
+                  <td
+                    class="sticky left-[490px] z-10 bg-white group-hover:bg-slate-50 border-r-2 border-slate-300 text-center py-2 shadow-[3px_0_5px_rgba(0,0,0,0.03)]"
+                  >
+                    {{ emp.nickname }}
+                  </td>
+
+                  <td
+                    v-for="day in daysInMonth"
+                    :key="day.dayNum"
+                    class="border-r text-center p-0 h-10 relative cursor-pointer hover:bg-slate-100"
+                    @click="handleCellClick($event, emp.id, day.dateStr)"
+                  >
+                    <div
+                      v-if="day.isSunday || isSpecialHoliday(day.dateStr)"
+                      class="absolute inset-0 bg-rose-600 z-0"
+                    ></div>
+                    <div
+                      class="relative z-10 flex items-center justify-center h-full w-full font-bold"
+                    >
+                      <span
+                        v-if="emp.leaves[day.dateStr] === 'A'"
+                        class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs"
+                        >A</span
+                      >
+                      <span
+                        v-else-if="emp.leaves[day.dateStr] === 'B'"
+                        class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs"
+                        >B</span
+                      >
+                      <span
+                        v-else-if="emp.leaves[day.dateStr] === 'C'"
+                        class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs"
+                        >C</span
+                      >
+                    </div>
+                  </td>
+
+                  <td
+                    class="bg-amber-50 text-amber-900 text-center font-bold text-xs border-l"
+                  >
+                    {{ calculateEmployeeUsedLeave(emp.id) }}
+                  </td>
+                  <td
+                    class="bg-primary-50 text-primary-800 text-center font-bold text-xs border-l"
+                  >
+                    <div class="flex flex-col">
+                      <span>{{ getRemainingLeave(emp) }} วัน</span
+                      ><span class="text-[9px] font-normal"
+                        >เต็ม {{ emp.quota }}</span
+                      >
+                    </div>
+                  </td>
+                  <td class="bg-white text-center border-l no-print py-1">
+                    <button
+                      @click.stop="openEditEmployeeModal(emp)"
+                      class="p-1.5 text-blue-500 hover:bg-slate-100 rounded"
+                    >
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button
+                      @click.stop="confirmDeleteEmployee(emp)"
+                      class="p-1.5 text-rose-500 hover:bg-slate-100 rounded"
+                    >
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+
+              <tr v-if="filteredGroups.length === 0">
+                <td
+                  :colspan="daysInMonth.length + 8"
+                  class="text-center py-12 text-slate-400"
+                >
+                  <i class="fa-solid fa-folder-open text-3xl mb-2"></i
+                  ><br />ไม่มีข้อมูลกลุ่ม หรือไม่พบข้อมูลตามคำค้นหา
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+
+      <div
+        v-if="activeCell"
+        class="fixed z-50 bg-white rounded-2xl shadow-xl border p-3 w-[210px] no-print"
+        :style="{ top: activeCell.y + 'px', left: activeCell.x + 'px' }"
+      >
+        <div
+          class="text-xs font-semibold text-slate-400 flex justify-between mb-2"
+        >
+          <span>เลือกรายการลา</span
+          ><button @click="activeCell = null">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="grid gap-1.5">
+          <button
+            @click="setLeaveType('A')"
+            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-amber-50 rounded text-xs"
+          >
+            <span
+              class="w-5 h-5 bg-amber-500 text-white rounded-full flex justify-center items-center font-bold text-[10px]"
+              >A</span
+            >เต็มวัน (Full Day)
+          </button>
+          <button
+            @click="setLeaveType('B')"
+            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-sky-50 rounded text-xs"
+          >
+            <span
+              class="w-5 h-5 bg-sky-500 text-white rounded-full flex justify-center items-center font-bold text-[10px]"
+              >B</span
+            >ครึ่งเช้า (Morning)
+          </button>
+          <button
+            @click="setLeaveType('C')"
+            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-rose-50 rounded text-xs"
+          >
+            <span
+              class="w-5 h-5 bg-rose-500 text-white rounded-full flex justify-center items-center font-bold text-[10px]"
+              >C</span
+            >ครึ่งบ่าย (Afternoon)
+          </button>
+          <button
+            @click="setLeaveType(null)"
+            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-slate-100 rounded text-rose-600 text-xs"
+          >
+            <i class="fa-solid fa-eraser"></i>ล้างการลา
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="showEmployeeModal"
+        class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 no-print"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden">
+          <div class="bg-primary-600 text-white p-4 flex justify-between">
+            <h3 class="font-bold">
+              {{ isEditMode ? 'แก้ไขพนักงาน' : 'เพิ่มพนักงานใหม่' }}
+            </h3>
+            <button @click="closeEmployeeModal">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <form @submit.prevent="saveEmployee" class="p-6 space-y-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500">รหัสพนักงาน</label
+              ><input
+                v-model="formEmp.employeeId"
+                required
+                class="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500"
+                >ชื่อ - นามสกุล</label
+              ><input
+                v-model="formEmp.name"
+                required
+                class="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500">ตำแหน่ง</label
+              ><input
+                v-model="formEmp.position"
+                required
+                class="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-bold text-slate-500">ชื่อเล่น</label
+                ><input
+                  v-model="formEmp.nickname"
+                  required
+                  class="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+                />
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-500"
+                  >โควตาพักร้อน</label
+                ><input
+                  v-model.number="formEmp.quota"
+                  type="number"
+                  required
+                  class="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500">กลุ่มงาน</label>
+              <select
+                v-model="formEmp.groupId"
+                required
+                class="w-full border rounded-xl px-3 py-2 text-sm mt-1"
+              >
+                <option v-for="grp in groups" :key="grp.id" :value="grp.id">
+                  {{ grp.name }}
+                </option>
+              </select>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                @click="closeEmployeeModal"
+                class="px-4 py-2"
+              >
+                ยกเลิก</button
+              ><button
+                type="submit"
+                class="bg-primary-600 text-white px-5 py-2 rounded-xl"
+              >
+                บันทึก
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div
+        v-if="showGroupModal"
+        class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 no-print"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden">
+          <div class="bg-slate-800 text-white p-4 flex justify-between">
+            <h3 class="font-bold">จัดการกลุ่มงาน</h3>
+            <button @click="showGroupModal = false">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <form @submit.prevent="addGroup" class="flex gap-2">
+              <input
+                v-model="newGroupName"
+                required
+                placeholder="ชื่อกลุ่มใหม่"
+                class="flex-1 border rounded-xl px-3 py-2 text-sm"
+              /><button
+                type="submit"
+                class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm"
+              >
+                เพิ่ม
+              </button>
+            </form>
+            <div class="space-y-2 max-h-[250px] overflow-y-auto">
+              <div
+                v-for="grp in groups"
+                :key="grp.id"
+                class="flex justify-between p-2.5 bg-slate-50 rounded-xl border text-sm"
+              >
+                <span class="font-medium">{{ grp.name }}</span
+                ><button @click="deleteGroup(grp.id)" class="text-rose-500">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="showHolidayModal"
+        class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 no-print"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden">
+          <div class="bg-rose-600 text-white p-4 flex justify-between">
+            <h3 class="font-bold">วันหยุดบริษัท</h3>
+            <button @click="showHolidayModal = false">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <form
+              @submit.prevent="addHoliday"
+              class="space-y-3 p-3 bg-slate-50 rounded-xl border"
+            >
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] font-bold">วันที่</label
+                  ><select
+                    v-model="newHolidayDay"
+                    class="w-full border rounded text-sm p-1"
+                  >
+                    <option v-for="day in daysInMonth" :value="day.dayNum">
+                      วันที่ {{ day.dayNum }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold">ชื่อวันหยุด</label
+                  ><input
+                    v-model="newHolidayName"
+                    required
+                    class="w-full border rounded text-sm p-1"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-rose-600 text-white py-1.5 rounded text-xs"
+              >
+                เพิ่มวันหยุด
+              </button>
+            </form>
+            <div class="space-y-2 max-h-[180px] overflow-y-auto text-sm">
+              <div
+                v-for="h in holidaysInCurrentMonth"
+                :key="h.id"
+                class="flex justify-between p-2 bg-rose-50 border border-rose-100 rounded"
+              >
+                <span><b>{{ h.dayNum }}:</b> {{ h.name }}</span
+                ><button @click="deleteHoliday(h.id)" class="text-rose-500">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 no-print">
+        <div
+          v-for="toast in toasts"
+          :key="toast.id"
+          class="px-4 py-3 rounded-xl shadow-lg text-white font-medium text-sm"
+          :class="[toast.type === 'success' ? 'bg-emerald-600' : toast.type === 'error' ? 'bg-rose-600' : 'bg-blue-600']"
+        >
+          {{ toast.message }}
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref, computed, watch, onMounted } = Vue;
+
+      createApp({
+        setup() {
+          // 🚀 URL ที่ได้จากขั้นตอน Google Apps Script
+          const API_URL =
+            "https://script.google.com/macros/s/AKfycbxi-UJWldzuJoI-BkMnHdH8IMs7rI3NEjTs06w0ExGmG3_G_vjJngkU3bAuZb1RK32Q/exec";
+
+          const groups = ref([]);
+          const employees = ref([]);
+          const holidays = ref([]);
+          const isLoading = ref(true);
+          const selectedMonth = ref(5);
+          const selectedYear = ref(2026);
+          const searchQuery = ref("");
+          const activeCell = ref(null);
+          const showEmployeeModal = ref(false);
+          const isEditMode = ref(false);
+          const formEmp = ref({
+            id: null,
+            employeeId: "",
+            name: "",
+            position: "",
+            nickname: "",
+            groupId: "",
+            quota: 10,
+          });
+          const showGroupModal = ref(false);
+          const newGroupName = ref("");
+          const showHolidayModal = ref(false);
+          const newHolidayDay = ref(1);
+          const newHolidayName = ref("");
+          const toasts = ref([]);
+
+          const thaiMonths = [
+            "มกราคม",
+            "กุมภาพันธ์",
+            "มีนาคม",
+            "เมษายน",
+            "พฤษภาคม",
+            "มิถุนายน",
+            "กรกฎาคม",
+            "สิงหาคม",
+            "กันยายน",
+            "ตุลาคม",
+            "พฤศจิกายน",
+            "ธันวาคม",
+          ];
+          const availableYears = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+
+          const triggerToast = (msg, type = "success") => {
+            const id = Date.now();
+            toasts.value.push({ id, message: msg, type });
+            setTimeout(() => {
+              toasts.value = toasts.value.filter((t) => t.id !== id);
+            }, 3500);
+          };
+
+          const fetchInitialData = async () => {
+            isLoading.value = true;
+            try {
+              const res = await fetch(API_URL);
+              const data = await res.json();
+              groups.value = data.groups || [];
+              employees.value = (data.employees || []).map((emp) => ({
+                ...emp,
+                leaves: emp.leaves || {},
+              }));
+
+              // 🚀 แก้ไขตรงนี้: บังคับแปลงค่า year, month, dayNum ให้กลับเป็นตัวเลข (Number)
+              holidays.value = (data.holidays || []).map((h) => ({
+                ...h,
+                year: Number(h.year),
+                month: Number(h.month),
+                dayNum: Number(h.dayNum),
+              }));
+            } catch (e) {
+              triggerToast("โหลดข้อมูลผิดพลาด", "error");
+            } finally {
+              isLoading.value = false;
+            }
+          };
+
+          const callApi = async (action, rawData) => {
+            try {
+              const data = JSON.parse(JSON.stringify(rawData));
+              fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action, data }),
+              })
+                .then((res) => res.json())
+                .then((r) => {
+                  if (r.status === "error")
+                    triggerToast("บันทึกผิดพลาด", "error");
+                });
+            } catch (e) {
+              triggerToast("ข้อมูลผิดปกติ", "error");
+            }
+          };
+
+          onMounted(() => fetchInitialData());
+
+          const daysInMonth = computed(() => {
+            const d = new Date(selectedYear.value, selectedMonth.value, 1);
+            const days = [];
+            const tn = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+            while (d.getMonth() === selectedMonth.value) {
+              days.push({
+                dateStr: `${selectedYear.value}-${String(selectedMonth.value + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+                dayNum: d.getDate(),
+                dayName: tn[d.getDay()],
+                isSunday: d.getDay() === 0,
+              });
+              d.setDate(d.getDate() + 1);
+            }
+            return days;
+          });
+
+          const holidaysInCurrentMonth = computed(() =>
+            holidays.value.filter(
+              (h) =>
+                h.year === selectedYear.value &&
+                h.month === selectedMonth.value,
+            ),
+          );
+          const isSpecialHoliday = (dateStr) => {
+            const d = new Date(dateStr);
+            return holidays.value.some(
+              (h) =>
+                h.year === selectedYear.value &&
+                h.month === selectedMonth.value &&
+                h.dayNum === d.getDate(),
+            );
+          };
+
+          const filteredEmployees = computed(() => {
+            if (!searchQuery.value) return employees.value;
+            const q = searchQuery.value.toLowerCase().trim();
+            return employees.value.filter(
+              (e) =>
+                String(e.employeeId).includes(q) ||
+                e.name.toLowerCase().includes(q) ||
+                e.nickname.toLowerCase().includes(q),
+            );
+          });
+
+          const filteredGroups = computed(() => {
+            if (!searchQuery.value) return groups.value;
+            const active = new Set(
+              filteredEmployees.value.map((e) => e.groupId),
+            );
+            return groups.value.filter((g) => active.has(g.id));
+          });
+
+          const getEmployeesInGroup = (gid) =>
+            filteredEmployees.value.filter((e) => e.groupId === gid);
+          const adjustMonth = (dir) => {
+            let m = selectedMonth.value + dir;
+            let y = selectedYear.value;
+            if (m < 0) {
+              m = 11;
+              y--;
+            } else if (m > 11) {
+              m = 0;
+              y++;
+            }
+            if (availableYears.includes(y)) {
+              selectedMonth.value = m;
+              selectedYear.value = y;
+            }
+          };
+
+          const calculateEmployeeUsedLeave = (empId) => {
+            const emp = employees.value.find((e) => e.id === empId);
+            if (!emp || !emp.leaves) return 0;
+            let total = 0;
+            const p = `${selectedYear.value}-${String(selectedMonth.value + 1).padStart(2, "0")}`;
+            Object.entries(emp.leaves).forEach(([d, t]) => {
+              if (d.startsWith(p)) {
+                if (t === "A") total += 1;
+                else if (t === "B" || t === "C") total += 0.5;
+              }
+            });
+            return total;
+          };
+          const getRemainingLeave = (emp) =>
+            Math.max(0, emp.quota - calculateEmployeeUsedLeave(emp.id));
+          const countTotalLeaveOccurrences = (t) => {
+            let c = 0;
+            const p = `${selectedYear.value}-${String(selectedMonth.value + 1).padStart(2, "0")}`;
+            employees.value.forEach((e) => {
+              if (e.leaves)
+                Object.entries(e.leaves).forEach(([d, lt]) => {
+                  if (d.startsWith(p) && lt === t) c++;
+                });
+            });
+            return c;
+          };
+
+          const handleCellClick = (e, empId, dateStr) => {
+            if (document.body.classList.contains("print-mode")) return;
+            activeCell.value = null;
+
+            const r = e.currentTarget.getBoundingClientRect();
+
+            // ขนาดโดยประมาณของ Popup (กว้าง 210px, สูงประมาณ 220px)
+            const popupWidth = 210;
+            const popupHeight = 220;
+
+            // คำนวณแกน X ให้ Popup อยู่กึ่งกลางช่องพอดี
+            let posX =
+              r.left + window.pageXOffset - popupWidth / 2 + r.width / 2;
+
+            // คำนวณแกน Y เริ่มต้น (ให้แสดงใต้ช่องที่คลิก)
+            let posY = r.bottom + window.pageYOffset + 4;
+
+            // 🚀 เช็คขอบจอด้านล่าง: ถ้าพื้นที่ด้านล่างจอเหลือน้อยกว่าความสูงของ Popup ให้แสดงด้านบนแทน!
+            if (r.bottom + popupHeight > window.innerHeight) {
+              posY = r.top + window.pageYOffset - popupHeight - 4;
+            }
+
+            // 🚀 เช็คขอบจอด้านขวา: ถ้าทะลุขอบขวา ให้ขยับมาซ้าย
+            if (posX + popupWidth > window.innerWidth + window.pageXOffset) {
+              posX = window.innerWidth + window.pageXOffset - popupWidth - 15;
+            }
+
+            // 🚀 เช็คขอบจอด้านซ้าย: ถ้าทะลุขอบซ้าย ให้ขยับมาขวา
+            if (posX < window.pageXOffset) {
+              posX = window.pageXOffset + 15;
+            }
+
+            activeCell.value = {
+              empId,
+              dateStr,
+              x: posX,
+              y: posY,
+            };
+          };
+
+          const setLeaveType = (type) => {
+            if (!activeCell.value) return;
+            const { empId, dateStr } = activeCell.value;
+            const emp = employees.value.find((e) => e.id === empId);
+            if (emp) {
+              if (!emp.leaves) emp.leaves = {};
+              if (type === null) {
+                delete emp.leaves[dateStr];
+                triggerToast("ล้างการลาเรียบร้อย");
+              } else {
+                const u = calculateEmployeeUsedLeave(empId);
+                const cur =
+                  emp.leaves[dateStr] === "A"
+                    ? 1
+                    : emp.leaves[dateStr]
+                      ? 0.5
+                      : 0;
+                const add = type === "A" ? 1 : 0.5;
+                if (u - cur + add > emp.quota) {
+                  triggerToast("โควตาไม่พอ", "error");
+                  activeCell.value = null;
+                  return;
+                }
+                emp.leaves[dateStr] = type;
+                triggerToast("บันทึกสำเร็จ");
+              }
+              callApi("save_leave", { empId, date: dateStr, leaveType: type });
+            }
+            activeCell.value = null;
+          };
+
+          const openAddEmployeeModal = () => {
+            isEditMode.value = false;
+            formEmp.value = {
+              id: null,
+              employeeId: "",
+              name: "",
+              position: "",
+              nickname: "",
+              groupId: groups.value[0]?.id || "",
+              quota: 10,
+            };
+            showEmployeeModal.value = true;
+          };
+          const openEditEmployeeModal = (emp) => {
+            isEditMode.value = true;
+            formEmp.value = { ...emp };
+            showEmployeeModal.value = true;
+          };
+          const closeEmployeeModal = () => (showEmployeeModal.value = false);
+          const saveEmployee = () => {
+            let s;
+            if (isEditMode.value) {
+              const i = employees.value.findIndex(
+                (e) => e.id === formEmp.value.id,
+              );
+              if (i !== -1) {
+                employees.value[i] = {
+                  ...employees.value[i],
+                  ...formEmp.value,
+                };
+                s = employees.value[i];
+              }
+            } else {
+              s = { ...formEmp.value, id: "emp_" + Date.now(), leaves: {} };
+              employees.value.push(s);
+            }
+            callApi("save_employee", s);
+            closeEmployeeModal();
+            triggerToast("บันทึกพนักงานสำเร็จ");
+          };
+          const confirmDeleteEmployee = (emp) => {
+            if (confirm(`ลบ ${emp.name}?`)) {
+              employees.value = employees.value.filter((e) => e.id !== emp.id);
+              callApi("delete_employee", { id: emp.id });
+              triggerToast("ลบสำเร็จ");
+            }
+          };
+
+          const openGroupModal = () => (showGroupModal.value = true);
+          const addGroup = () => {
+            if (!newGroupName.value.trim()) return;
+            const g = {
+              id: "grp_" + Date.now(),
+              name: newGroupName.value.trim(),
+            };
+            groups.value.push(g);
+            callApi("save_group", g);
+            newGroupName.value = "";
+            triggerToast("เพิ่มกลุ่มสำเร็จ");
+          };
+          const deleteGroup = (id) => {
+            if (employees.value.some((e) => e.groupId === id))
+              return triggerToast("มีพนักงานอยู่ในกลุ่ม", "error");
+            groups.value = groups.value.filter((g) => g.id !== id);
+            callApi("delete_group", { id });
+            triggerToast("ลบกลุ่มสำเร็จ");
+          };
+
+          const openHolidayModal = () => (showHolidayModal.value = true);
+          const addHoliday = () => {
+            if (!newHolidayName.value.trim()) return;
+            const h = {
+              id: "h_" + Date.now(),
+              year: selectedYear.value,
+              month: selectedMonth.value,
+              dayNum: newHolidayDay.value,
+              name: newHolidayName.value.trim(),
+            };
+            holidays.value.push(h);
+            callApi("save_holiday", h);
+            newHolidayName.value = "";
+            triggerToast("เพิ่มวันหยุดสำเร็จ");
+          };
+          const deleteHoliday = (id) => {
+            holidays.value = holidays.value.filter((h) => h.id !== id);
+            callApi("delete_holiday", { id });
+            triggerToast("ลบวันหยุดสำเร็จ");
+          };
+
+          const togglePrintMode = () => window.print();
+
+          return {
+            isLoading,
+            groups,
+            employees,
+            holidays,
+            selectedMonth,
+            selectedYear,
+            searchQuery,
+            thaiMonths,
+            availableYears,
+            daysInMonth,
+            holidaysInCurrentMonth,
+            isSpecialHoliday,
+            filteredGroups,
+            getEmployeesInGroup,
+            calculateEmployeeUsedLeave,
+            getRemainingLeave,
+            countTotalLeaveOccurrences,
+            adjustMonth,
+            activeCell,
+            handleCellClick,
+            setLeaveType,
+            showEmployeeModal,
+            isEditMode,
+            formEmp,
+            openAddEmployeeModal,
+            openEditEmployeeModal,
+            closeEmployeeModal,
+            saveEmployee,
+            confirmDeleteEmployee,
+            showGroupModal,
+            newGroupName,
+            openGroupModal,
+            addGroup,
+            deleteGroup,
+            showHolidayModal,
+            newHolidayDay,
+            newHolidayName,
+            openHolidayModal,
+            addHoliday,
+            deleteHoliday,
+            toasts,
+            togglePrintMode,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
