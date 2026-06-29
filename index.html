@@ -1,4 +1,4 @@
- <!doctype html>
+<!doctype html>
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
@@ -321,78 +321,42 @@
 
         <div v-else class="overflow-x-auto custom-scrollbar relative">
           <table class="w-full text-sm border-collapse table-fixed select-none">
-            <thead
-              class="bg-slate-100 text-slate-600 border-b border-slate-200"
-            >
+            <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
               <tr>
-                <th
-                  class="sticky left-0 z-30 bg-slate-100 w-[45px] border-r py-3 text-center text-xs"
-                >
-                  No
-                </th>
-                <th
-                  class="sticky left-[45px] z-30 bg-slate-100 w-[90px] border-r py-3 text-left pl-3 text-xs"
-                >
-                  รหัสพนักงาน
-                </th>
-                <th
-                  class="sticky left-[135px] z-30 bg-slate-100 w-[185px] border-r py-3 text-left pl-3 text-xs"
-                >
+                <th class="hidden md:table-cell sticky md:left-0 z-30 bg-slate-100 w-[45px] border-r py-3 text-center text-xs">No</th>
+                <th class="hidden md:table-cell sticky md:left-[45px] z-30 bg-slate-100 w-[90px] border-r py-3 text-left pl-3 text-xs">รหัสพนักงาน</th>
+                
+                <th class="sticky left-0 md:left-[135px] z-30 bg-slate-100 w-[130px] md:w-[185px] border-r py-3 text-left pl-3 text-xs shadow-[3px_0_5px_rgba(0,0,0,0.05)] md:shadow-none">
                   ชื่อ - นามสกุล
                 </th>
-                <th
-                  class="sticky left-[320px] z-30 bg-slate-100 w-[170px] border-r py-3 text-left pl-3 text-xs"
-                >
-                  ตำแหน่ง
-                </th>
-                <th
-                  class="sticky left-[490px] z-30 bg-slate-100 w-[80px] border-r-2 border-slate-300 py-3 text-center text-xs shadow-[3px_0_5px_rgba(0,0,0,0.05)]"
-                >
-                  ชื่อเล่น
-                </th>
+                
+                <th class="hidden lg:table-cell sticky lg:left-[320px] z-30 bg-slate-100 w-[170px] border-r py-3 text-left pl-3 text-xs">ตำแหน่ง</th>
+                <th class="hidden md:table-cell sticky md:left-[490px] z-30 bg-slate-100 w-[80px] border-r-2 border-slate-300 py-3 text-center text-xs md:shadow-[3px_0_5px_rgba(0,0,0,0.05)]">ชื่อเล่น</th>
 
                 <th
                   v-for="day in daysInMonth"
                   :key="day.dayNum"
-                  class="border-r w-[38px] text-center text-[11px] py-1.5"
+                  class="border-r w-[38px] min-w-[38px] text-center text-[11px] py-1.5"
                   :class="[(day.isSunday || isSpecialHoliday(day.dateStr)) ? 'bg-rose-50 text-rose-600' : 'bg-slate-100']"
                 >
                   <div>{{ day.dayName }}</div>
                   <div class="text-[13px] font-bold">{{ day.dayNum }}</div>
                 </th>
 
-                <th
-                  class="bg-amber-50 text-amber-800 w-[70px] text-center text-xs border-l"
-                >
-                  ใช้ไป
-                </th>
-                <th
-                  class="bg-primary-50 text-primary-800 w-[80px] text-center text-xs border-l"
-                >
-                  คงเหลือ
-                </th>
-                <th
-                  class="bg-slate-100 text-slate-600 w-[80px] text-center text-xs border-l no-print"
-                >
-                  จัดการ
-                </th>
+                <th class="bg-amber-50 text-amber-800 w-[70px] min-w-[70px] text-center text-xs border-l">ใช้ไป</th>
+                <th class="bg-primary-50 text-primary-800 w-[80px] min-w-[80px] text-center text-xs border-l">คงเหลือ</th>
+                <th class="bg-slate-100 text-slate-600 w-[80px] min-w-[80px] text-center text-xs border-l no-print">จัดการ</th>
               </tr>
             </thead>
 
             <tbody>
               <template v-for="group in filteredGroups" :key="group.id">
                 <tr class="bg-slate-50 border-y text-slate-700">
-                  <td
-                    class="sticky left-0 z-20 bg-slate-100 border-r font-bold px-3 py-2 text-primary-600 text-[13px]"
-                    colspan="5"
-                  >
-                    <i class="fa-solid fa-tags text-xs mr-1"></i>{{ group.name
-                    }}
+                  <td :colspan="daysInMonth.length + 8" class="bg-slate-100 p-0 border-r">
+                    <div class="sticky left-0 z-20 font-bold px-3 py-2 text-primary-600 text-[13px] w-max bg-slate-100">
+                      <i class="fa-solid fa-tags text-xs mr-1"></i>{{ group.name }}
+                    </div>
                   </td>
-                  <td
-                    :colspan="daysInMonth.length + 3"
-                    class="bg-slate-50"
-                  ></td>
                 </tr>
 
                 <tr
@@ -400,31 +364,15 @@
                   :key="emp.id"
                   class="hover:bg-slate-50 border-b group"
                 >
-                  <td
-                    class="sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r text-center py-2 text-xs text-slate-400"
-                  >
-                    {{ empIdx + 1 }}
-                  </td>
-                  <td
-                    class="sticky left-[45px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-mono text-xs text-slate-600"
-                  >
-                    {{ emp.employeeId }}
-                  </td>
-                  <td
-                    class="sticky left-[135px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-medium"
-                  >
+                  <td class="hidden md:table-cell sticky md:left-0 z-10 bg-white group-hover:bg-slate-50 border-r text-center py-2 text-xs text-slate-400">{{ empIdx + 1 }}</td>
+                  <td class="hidden md:table-cell sticky md:left-[45px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-mono text-xs text-slate-600">{{ emp.employeeId }}</td>
+                  
+                  <td class="sticky left-0 md:left-[135px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-medium text-xs md:text-sm truncate max-w-[130px] md:max-w-none shadow-[3px_0_5px_rgba(0,0,0,0.05)] md:shadow-none">
                     {{ emp.name }}
                   </td>
-                  <td
-                    class="sticky left-[320px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 text-xs text-slate-500"
-                  >
-                    {{ emp.position }}
-                  </td>
-                  <td
-                    class="sticky left-[490px] z-10 bg-white group-hover:bg-slate-50 border-r-2 border-slate-300 text-center py-2 shadow-[3px_0_5px_rgba(0,0,0,0.03)]"
-                  >
-                    {{ emp.nickname }}
-                  </td>
+                  
+                  <td class="hidden lg:table-cell sticky lg:left-[320px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 text-xs text-slate-500">{{ emp.position }}</td>
+                  <td class="hidden md:table-cell sticky md:left-[490px] z-10 bg-white group-hover:bg-slate-50 border-r-2 border-slate-300 text-center py-2 md:shadow-[3px_0_5px_rgba(0,0,0,0.03)]">{{ emp.nickname }}</td>
 
                   <td
                     v-for="day in daysInMonth"
@@ -432,57 +380,26 @@
                     class="border-r text-center p-0 h-10 relative cursor-pointer hover:bg-slate-100"
                     @click="handleCellClick($event, emp.id, day.dateStr)"
                   >
-                    <div
-                      v-if="day.isSunday || isSpecialHoliday(day.dateStr)"
-                      class="absolute inset-0 bg-rose-600 z-0"
-                    ></div>
-                    <div
-                      class="relative z-10 flex items-center justify-center h-full w-full font-bold"
-                    >
-                      <span
-                        v-if="emp.leaves[day.dateStr] === 'A'"
-                        class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs"
-                        >A</span
-                      >
-                      <span
-                        v-else-if="emp.leaves[day.dateStr] === 'B'"
-                        class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs"
-                        >B</span
-                      >
-                      <span
-                        v-else-if="emp.leaves[day.dateStr] === 'C'"
-                        class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs"
-                        >C</span
-                      >
+                    <div v-if="day.isSunday || isSpecialHoliday(day.dateStr)" class="absolute inset-0 bg-rose-600 z-0"></div>
+                    <div class="relative z-10 flex items-center justify-center h-full w-full font-bold">
+                      <span v-if="emp.leaves[day.dateStr] === 'A'" class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs">A</span>
+                      <span v-else-if="emp.leaves[day.dateStr] === 'B'" class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs">B</span>
+                      <span v-else-if="emp.leaves[day.dateStr] === 'C'" class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">C</span>
                     </div>
                   </td>
 
-                  <td
-                    class="bg-amber-50 text-amber-900 text-center font-bold text-xs border-l"
-                  >
-                    {{ calculateEmployeeUsedLeave(emp.id) }}
-                  </td>
-                  <td
-                    class="bg-primary-50 text-primary-800 text-center font-bold text-xs border-l"
-                  >
+                  <td class="bg-amber-50 text-amber-900 text-center font-bold text-xs border-l">{{ calculateEmployeeUsedLeave(emp.id) }}</td>
+                  <td class="bg-primary-50 text-primary-800 text-center font-bold text-xs border-l">
                     <div class="flex flex-col">
-                      <span>{{ getRemainingLeave(emp) }} วัน</span
-                      ><span class="text-[9px] font-normal"
-                        >เต็ม {{ emp.quota }}</span
-                      >
+                      <span>{{ getRemainingLeave(emp) }} วัน</span>
+                      <span class="text-[9px] font-normal">เต็ม {{ emp.quota }}</span>
                     </div>
                   </td>
                   <td class="bg-white text-center border-l no-print py-1">
-                    <button
-                      @click.stop="openEditEmployeeModal(emp)"
-                      class="p-1.5 text-blue-500 hover:bg-slate-100 rounded"
-                    >
+                    <button @click.stop="openEditEmployeeModal(emp)" class="p-2 text-blue-500 hover:bg-slate-100 rounded">
                       <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button
-                      @click.stop="confirmDeleteEmployee(emp)"
-                      class="p-1.5 text-rose-500 hover:bg-slate-100 rounded"
-                    >
+                    <button @click.stop="confirmDeleteEmployee(emp)" class="p-2 text-rose-500 hover:bg-slate-100 rounded">
                       <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </td>
@@ -490,12 +407,8 @@
               </template>
 
               <tr v-if="filteredGroups.length === 0">
-                <td
-                  :colspan="daysInMonth.length + 8"
-                  class="text-center py-12 text-slate-400"
-                >
-                  <i class="fa-solid fa-folder-open text-3xl mb-2"></i
-                  ><br />ไม่มีข้อมูลกลุ่ม หรือไม่พบข้อมูลตามคำค้นหา
+                <td :colspan="daysInMonth.length + 8" class="text-center py-12 text-slate-400">
+                  <i class="fa-solid fa-folder-open text-3xl mb-2"></i><br />ไม่มีข้อมูลกลุ่ม หรือไม่พบข้อมูลตามคำค้นหา
                 </td>
               </tr>
             </tbody>
@@ -505,50 +418,27 @@
 
       <div
         v-if="activeCell"
-        class="fixed z-50 bg-white rounded-2xl shadow-xl border p-3 w-[210px] no-print"
+        class="fixed z-50 bg-white rounded-2xl shadow-xl border p-3 w-[240px] no-print"
         :style="{ top: activeCell.y + 'px', left: activeCell.x + 'px' }"
       >
-        <div
-          class="text-xs font-semibold text-slate-400 flex justify-between mb-2"
-        >
-          <span>เลือกรายการลา</span
-          ><button @click="activeCell = null">
+        <div class="text-sm font-semibold text-slate-400 flex justify-between mb-2 px-1">
+          <span>เลือกรายการลา</span>
+          <button @click="activeCell = null" class="p-1">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
-        <div class="grid gap-1.5">
-          <button
-            @click="setLeaveType('A')"
-            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-amber-50 rounded text-xs"
-          >
-            <span
-              class="w-5 h-5 bg-amber-500 text-white rounded-full flex justify-center items-center font-bold text-[10px]"
-              >A</span
-            >เต็มวัน (Full Day)
+        <div class="grid gap-1">
+          <button @click="setLeaveType('A')" class="flex items-center gap-3 text-left px-3 py-3 hover:bg-amber-50 rounded-xl text-sm">
+            <span class="w-6 h-6 bg-amber-500 text-white rounded-full flex justify-center items-center font-bold text-[11px]">A</span>เต็มวัน (Full Day)
           </button>
-          <button
-            @click="setLeaveType('B')"
-            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-sky-50 rounded text-xs"
-          >
-            <span
-              class="w-5 h-5 bg-sky-500 text-white rounded-full flex justify-center items-center font-bold text-[10px]"
-              >B</span
-            >ครึ่งเช้า (Morning)
+          <button @click="setLeaveType('B')" class="flex items-center gap-3 text-left px-3 py-3 hover:bg-sky-50 rounded-xl text-sm">
+            <span class="w-6 h-6 bg-sky-500 text-white rounded-full flex justify-center items-center font-bold text-[11px]">B</span>ครึ่งเช้า (Morning)
           </button>
-          <button
-            @click="setLeaveType('C')"
-            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-rose-50 rounded text-xs"
-          >
-            <span
-              class="w-5 h-5 bg-rose-500 text-white rounded-full flex justify-center items-center font-bold text-[10px]"
-              >C</span
-            >ครึ่งบ่าย (Afternoon)
+          <button @click="setLeaveType('C')" class="flex items-center gap-3 text-left px-3 py-3 hover:bg-rose-50 rounded-xl text-sm">
+            <span class="w-6 h-6 bg-rose-500 text-white rounded-full flex justify-center items-center font-bold text-[11px]">C</span>ครึ่งบ่าย (Afternoon)
           </button>
-          <button
-            @click="setLeaveType(null)"
-            class="flex items-center gap-2.5 text-left px-2 py-2 hover:bg-slate-100 rounded text-rose-600 text-xs"
-          >
-            <i class="fa-solid fa-eraser"></i>ล้างการลา
+          <button @click="setLeaveType(null)" class="flex items-center gap-3 text-left px-3 py-3 hover:bg-slate-100 rounded-xl text-rose-600 text-sm">
+            <i class="fa-solid fa-eraser w-6 text-center"></i>ล้างการลา
           </button>
         </div>
       </div>
@@ -962,8 +852,8 @@
 
             const r = e.currentTarget.getBoundingClientRect();
 
-            // ขนาดโดยประมาณของ Popup (กว้าง 210px, สูงประมาณ 220px)
-            const popupWidth = 210;
+            // เปลี่ยนความกว้าง Popup จาก 210 เป็น 240 ตามที่เราปรับใน CSS
+            const popupWidth = 240;
             const popupHeight = 220;
 
             // คำนวณแกน X ให้ Popup อยู่กึ่งกลางช่องพอดี
