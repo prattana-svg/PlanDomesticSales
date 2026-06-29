@@ -326,6 +326,7 @@
                 <th class="hidden md:table-cell sticky md:left-0 z-30 bg-slate-100 w-[45px] border-r py-3 text-center text-xs">No</th>
                 <th class="hidden md:table-cell sticky md:left-[45px] z-30 bg-slate-100 w-[90px] border-r py-3 text-left pl-3 text-xs">รหัสพนักงาน</th>
                 
+                <!-- แสดงตลอด (มือถือชิดซ้าย 0, คอมพิวเตอร์ชิดซ้าย 135) -->
                 <th class="sticky left-0 md:left-[135px] z-30 bg-slate-100 w-[130px] md:w-[185px] border-r py-3 text-left pl-3 text-xs shadow-[3px_0_5px_rgba(0,0,0,0.05)] md:shadow-none">
                   ชื่อ - นามสกุล
                 </th>
@@ -333,6 +334,7 @@
                 <th class="hidden lg:table-cell sticky lg:left-[320px] z-30 bg-slate-100 w-[170px] border-r py-3 text-left pl-3 text-xs">ตำแหน่ง</th>
                 <th class="hidden md:table-cell sticky md:left-[490px] z-30 bg-slate-100 w-[80px] border-r-2 border-slate-300 py-3 text-center text-xs md:shadow-[3px_0_5px_rgba(0,0,0,0.05)]">ชื่อเล่น</th>
 
+                <!-- วันที่ในเดือน -->
                 <th
                   v-for="day in daysInMonth"
                   :key="day.dayNum"
@@ -367,6 +369,7 @@
                   <td class="hidden md:table-cell sticky md:left-0 z-10 bg-white group-hover:bg-slate-50 border-r text-center py-2 text-xs text-slate-400">{{ empIdx + 1 }}</td>
                   <td class="hidden md:table-cell sticky md:left-[45px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-mono text-xs text-slate-600">{{ emp.employeeId }}</td>
                   
+                  <!-- ชื่อ - นามสกุล แสดงบนมือถือ -->
                   <td class="sticky left-0 md:left-[135px] z-10 bg-white group-hover:bg-slate-50 border-r pl-3 py-2 font-medium text-xs md:text-sm truncate max-w-[130px] md:max-w-none shadow-[3px_0_5px_rgba(0,0,0,0.05)] md:shadow-none">
                     {{ emp.name }}
                   </td>
@@ -415,6 +418,15 @@
           </table>
         </div>
       </main>
+
+      <!-- ส่วนของ Popup เมนูเลือกวันลา -->
+      
+      <!-- Backdrop ใสๆ สำหรับแตะปิด Popup ง่ายๆ บนมือถือ -->
+      <div 
+        v-if="activeCell" 
+        class="fixed inset-0 z-40 no-print" 
+        @click="activeCell = null">
+      </div>
 
       <div
         v-if="activeCell"
@@ -650,7 +662,6 @@
 
       createApp({
         setup() {
-          // 🚀 URL ที่ได้จากขั้นตอน Google Apps Script
           const API_URL =
             "https://script.google.com/macros/s/AKfycbxi-UJWldzuJoI-BkMnHdH8IMs7rI3NEjTs06w0ExGmG3_G_vjJngkU3bAuZb1RK32Q/exec";
 
@@ -715,7 +726,6 @@
                 leaves: emp.leaves || {},
               }));
 
-              // 🚀 แก้ไขตรงนี้: บังคับแปลงค่า year, month, dayNum ให้กลับเป็นตัวเลข (Number)
               holidays.value = (data.holidays || []).map((h) => ({
                 ...h,
                 year: Number(h.year),
@@ -852,30 +862,26 @@
 
             const r = e.currentTarget.getBoundingClientRect();
 
-            // เปลี่ยนความกว้าง Popup จาก 210 เป็น 240 ตามที่เราปรับใน CSS
             const popupWidth = 240;
             const popupHeight = 220;
 
-            // คำนวณแกน X ให้ Popup อยู่กึ่งกลางช่องพอดี
-            let posX =
-              r.left + window.pageXOffset - popupWidth / 2 + r.width / 2;
+            // แก้ไขการคำนวณตำแหน่งสำหรับ Class "fixed" ไม่ต้องบวก pageXOffset/pageYOffset
+            let posX = r.left - popupWidth / 2 + r.width / 2;
+            let posY = r.bottom + 4;
 
-            // คำนวณแกน Y เริ่มต้น (ให้แสดงใต้ช่องที่คลิก)
-            let posY = r.bottom + window.pageYOffset + 4;
-
-            // 🚀 เช็คขอบจอด้านล่าง: ถ้าพื้นที่ด้านล่างจอเหลือน้อยกว่าความสูงของ Popup ให้แสดงด้านบนแทน!
-            if (r.bottom + popupHeight > window.innerHeight) {
-              posY = r.top + window.pageYOffset - popupHeight - 4;
+            // เช็คขอบจอด้านล่าง ถ้าล้นให้เด้งขึ้นไปอยู่ข้างบนเซลล์แทน
+            if (posY + popupHeight > window.innerHeight) {
+              posY = r.top - popupHeight - 4;
             }
 
-            // 🚀 เช็คขอบจอด้านขวา: ถ้าทะลุขอบขวา ให้ขยับมาซ้าย
-            if (posX + popupWidth > window.innerWidth + window.pageXOffset) {
-              posX = window.innerWidth + window.pageXOffset - popupWidth - 15;
+            // เช็คขอบจอด้านขวา
+            if (posX + popupWidth > window.innerWidth) {
+              posX = window.innerWidth - popupWidth - 15;
             }
 
-            // 🚀 เช็คขอบจอด้านซ้าย: ถ้าทะลุขอบซ้าย ให้ขยับมาขวา
-            if (posX < window.pageXOffset) {
-              posX = window.pageXOffset + 15;
+            // เช็คขอบจอด้านซ้าย
+            if (posX < 0) {
+              posX = 15;
             }
 
             activeCell.value = {
